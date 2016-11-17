@@ -7,8 +7,8 @@
 //
 
 #include "Image.h"
-#define RationInWidth 4
-#define RationInHeight 4
+#define RationInWidth 2
+#define RationInHeight 2
 int readMagicNumber(FILE *fp) {
     int magic_number;
     if (!fscanf(fp, "P%d\n", &magic_number)){
@@ -87,7 +87,7 @@ Buffer *ImageRead(const char *filename){
     buffer->box = (Box *)malloc(sizeof(Box)*size);
     
     if(buffer->magic_number==6){
-        char c ='A';//init
+        char c ;//init
         int index = rand()%10;
         fseek(f_source,3*index, SEEK_CUR);
         while (index < size) {     //Dr.plamer tola me should be the origianl size of image
