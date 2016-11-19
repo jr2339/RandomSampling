@@ -7,8 +7,8 @@
 //
 
 #include "Image.h"
-#define RationInWidth 2
-#define RationInHeight 2
+#define RationInWidth 4
+#define RationInHeight 4
 int readMagicNumber(FILE *fp) {
     int magic_number;
     if (!fscanf(fp, "P%d\n", &magic_number)){
@@ -45,7 +45,8 @@ void skip_comments(FILE *f_source){
  **************************************************************************************************************/
 // readPPMHeader help us to detemine which format is our source image
 
-void readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_height){
+long int readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_height){
+    
     //int source_width,source_height,
     int source_maxval;
      skip_comments(f_source);
@@ -60,7 +61,7 @@ void readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_he
         fprintf(stderr,"image is not ture-color(8byte), read failed\n");
         exit(1);
     }
-    
+    return ftell(f_source);
 }
 
 /**************************************************************************************************************
@@ -82,18 +83,20 @@ Buffer *ImageRead(const char *filename){
         exit(1);
     }
     buffer->magic_number = readMagicNumber(f_source);
-    readHeader(f_source,buffer,&source_width,&source_height);
+    long int header_length = readHeader(f_source,buffer,&source_width,&source_height);
     int size = source_width*source_height;
     buffer->box = (Box *)malloc(sizeof(Box)*size);
+    *buffer->box = (Box){};
     
     if(buffer->magic_number==6){
-        char c ;//init
+        unsigned char c ;//init
         int index = rand()%10;
         fseek(f_source,3*index, SEEK_CUR);
         while (index < size) {     //Dr.plamer tola me should be the origianl size of image
-            int x = ((index%source_width)/RationInWidth);  //col_index in buffer
-            int y = ((index/source_width)/RationInHeight); // row_index in buffer
-           
+            int x = ((index%source_width)/(RationInWidth));  //col_index in buffer
+            int y = ((index/source_width)/(RationInHeight)); // row_index in buffer
+            
+            //printf("%d\n",index);
             
             fread(&c, 1, 1, f_source);
             buffer->box[y*buffer->width+x].r_sum += c;
@@ -104,18 +107,40 @@ Buffer *ImageRead(const char *filename){
             
             buffer->box[y*buffer->width+x].count++;
 
-            int jump = rand()%10+1;
+
+            int jump = rand()%10;
+            
+
             fseek(f_source,3*jump, SEEK_CUR);
-            index += jump;
+            index += 1 + jump;
         }
 
     }
+   
     int buffer_size = buffer->width*buffer->height;
+    
     for (int i=0; i<buffer_size; i++) {
         
-        buffer->box[i].r_average = (buffer->box[i].r_sum)/(buffer->box[i].count);
-        buffer->box[i].g_average = (buffer->box[i].g_sum)/(buffer->box[i].count);
-        buffer->box[i].b_average = (buffer->box[i].b_sum)/(buffer->box[i].count);
+        if (buffer->box[i].count != 0) {
+            buffer->box[i].r_sum = (buffer->box[i].r_sum)/(buffer->box[i].count);
+            buffer->box[i].g_sum = (buffer->box[i].g_sum)/(buffer->box[i].count);
+            buffer->box[i].b_sum = (buffer->box[i].b_sum)/(buffer->box[i].count);
+        }
+        else{
+            //if we didn't simple at this box, we choose the first one.
+            unsigned char c ;//init
+            int x = (i%buffer->width)*RationInWidth;  //col_index in buffer
+            int y = (i/buffer->width)*RationInHeight; // row_index in buffer
+            fseek(f_source, header_length+(y*source_width+x)*3, SEEK_SET);
+            fread(&c, 1, 1, f_source);
+            buffer->box[i].r_sum = c;
+            fread(&c, 1, 1, f_source);
+            buffer->box[i].g_sum = c;
+            fread(&c, 1, 1, f_source);
+            buffer->box[i].b_sum = c;
+            
+        }
+        printf("the count at %d is %d\n",i,buffer->box[i].count);
         
     }
    
@@ -126,34 +151,23 @@ Buffer *ImageRead(const char *filename){
  **************************************************************************************************************/
 void ImageWrite(Buffer *buffer, const char *filename,int format){
     int size = buffer->width * buffer->height;
-    
+    printf("buffer width is %d, buffer heught is %d\n",buffer->width,buffer->height);
     FILE *f_des = fopen(filename, "w");
     if (!f_des){
         fprintf(stderr,"cannot open file for writing");
     }
-    char ch;
+    unsigned char ch;
     if(format==6){
         fprintf(f_des, "P%d\n%d %d\n%d\n",format,buffer->width, buffer->height, buffer->maxval);
         for(int i=0; i<size;i++){
-            ch=buffer->box[i].r_average;
+            ch=buffer->box[i].r_sum;
             fwrite(&ch, 1, 1, f_des);
-            ch=buffer->box[i].g_average;
+            ch=buffer->box[i].g_sum;
             fwrite(&ch, 1, 1, f_des);
-            ch=buffer->box[i].b_average;
+            ch=buffer->box[i].b_sum;
             fwrite(&ch, 1, 1, f_des);
             
         }
-    }
-    else if(format==3){
-        fprintf(f_des, "P%d\n%d %d\n%d\n",format,buffer->width, buffer->height, buffer->maxval);
-            for(int i=0; i<size;i++){
-                fprintf(f_des, "%f",buffer->box[i].r_average);
-                fprintf(f_des, "%f",buffer->box[i].g_average);
-                fprintf(f_des, "%f",buffer->box[i].b_average);
-            }
-            
-            fprintf(f_des, "\n");
-        
     }
     fclose(f_des);
     

@@ -29,12 +29,12 @@ typedef struct Image{
 
 
 typedef struct Box{
-    double r_sum;
-    double g_sum;
-    double b_sum;
-    double r_average;
-    double g_average;
-    double b_average;
+    int r_sum;
+    int g_sum;
+    int b_sum;
+    //double r_average;
+    //double g_average;
+    //double b_average;
     int count;
 }Box;
 
@@ -57,7 +57,7 @@ typedef struct Buffer{
 
 
 int readMagicNumber(FILE *fp);
-void readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_height);
+long int readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_height);
 Buffer *ImageRead(const char *filename);
 void ImageWrite(Buffer *buffer, const char *filename,int format);
 
