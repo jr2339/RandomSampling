@@ -15,8 +15,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <pthread.h>
-
-
+#include <time.h>
 
 typedef struct Image{
     int width;
@@ -27,14 +26,10 @@ typedef struct Image{
 }Image;
 
 
-
 typedef struct Box{
-    int r_sum;
-    int g_sum;
-    int b_sum;
-    //double r_average;
-    //double g_average;
-    //double b_average;
+    int r;
+    int g;
+    int b;
     int count;
 }Box;
 
@@ -57,8 +52,8 @@ typedef struct Buffer{
 
 
 int readMagicNumber(FILE *fp);
-long int readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_height);
-Buffer *ImageRead(const char *filename);
-void ImageWrite(Buffer *buffer, const char *filename,int format);
+long int readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_height,int Ratio);
+Buffer *ImageRead(const char *filename,int Ratio);
+void ImageWrite(Buffer *buffer, const char *filename);
 
 #endif /* Image_h */

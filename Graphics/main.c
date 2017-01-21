@@ -21,7 +21,7 @@ int main(int argc, const char * argv[]) {
         perror("Too many arguments");
         exit(1);//if the nunber is not 0, not access to error
     }
-    int format =atoi(argv[1]); // change the first agument to the int, format shoule be 1-7;
+    int Ratio =atoi(argv[1]); 
     const char *inputName = argv[2];  //input.ppm
     const char *outputName = argv[3]; //output.ppm
     
@@ -29,8 +29,8 @@ int main(int argc, const char * argv[]) {
     
     /************************************************************************************************/
     
-    buffer = ImageRead(inputName);
-    ImageWrite(buffer, outputName, format);
+    buffer = ImageRead(inputName,Ratio);
+    ImageWrite(buffer, outputName);
     
     return 0;
 }
