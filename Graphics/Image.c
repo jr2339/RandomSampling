@@ -91,7 +91,7 @@ Buffer *ImageRead(const char *filename,int Ratio){
     
     if(buffer->magic_number==6){
         unsigned char c ;//init
-        int index = rand()%10;
+        int index = rand()%20;
         fseek(f_source,3*index, SEEK_CUR);
         while (index < size) {     //Dr.plamer tola me should be the origianl size of image
             int x = ((index%source_width)/(Ratio));  //col_index in buffer
