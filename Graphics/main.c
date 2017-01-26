@@ -7,29 +7,30 @@
 //
 
 #include <stdio.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "Image.h"
 
 int main(int argc, const char * argv[]) {
-    if(argc < 4){
+    if(argc < 6){
         perror("We need more arguments");
         exit(1);//if the nunber is not 0, not access to error
     }
-    else if(argc > 4){
+    else if(argc > 6){
         perror("Too many arguments");
         exit(1);//if the nunber is not 0, not access to error
     }
-    int Ratio =atoi(argv[1]); 
-    const char *inputName = argv[2];  //input.ppm
-    const char *outputName = argv[3]; //output.ppm
+    int Ratio =atoi(argv[1]);
+    int min = atoi(argv[2]);
+    int max = atoi(argv[3]);
+    const char *inputName = argv[4];  //input.ppm
+    const char *outputName = argv[5]; //output.ppm
     
     Buffer *buffer;
     
     /************************************************************************************************/
     
-    buffer = ImageRead(inputName,Ratio);
+    buffer = ImageRead(inputName,Ratio,min,max);
     ImageWrite(buffer, outputName);
     
     return 0;

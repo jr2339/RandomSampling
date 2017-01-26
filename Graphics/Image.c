@@ -65,10 +65,12 @@ long int readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *sourc
 /**************************************************************************************************************
  **************************************************************************************************************/
 
-Buffer *ImageRead(const char *filename,int Ratio){
+Buffer *ImageRead(const char *filename,int Ratio,int min,int max){
     time_t t;
     srand((unsigned)time(&t));
     
+    //
+    int Span = min + rand()%(max+1-min);
     FILE *f_source = fopen(filename,"r");
     if(!f_source){
         fprintf(stderr,"can't open file for reading \n");
@@ -91,7 +93,7 @@ Buffer *ImageRead(const char *filename,int Ratio){
     
     if(buffer->magic_number==6){
         unsigned char c ;//init
-        int index = rand()%20;
+        int index = rand()%Span;
         fseek(f_source,3*index, SEEK_CUR);
         while (index < size) {     //Dr.plamer tola me should be the origianl size of image
             int x = ((index%source_width)/(Ratio));  //col_index in buffer
@@ -109,13 +111,17 @@ Buffer *ImageRead(const char *filename,int Ratio){
             buffer->box[y*buffer->width+x].count++;
 
 
-            int jump = rand()%20;
+            int jump = rand()%Span;
             
 
             fseek(f_source,3*jump, SEEK_CUR);
             index += 1 + jump;
         }
 
+    }
+    else{
+        fprintf(stderr,"image format is not correct");
+        exit(1);
     }
    
     int buffer_size = buffer->width*buffer->height;

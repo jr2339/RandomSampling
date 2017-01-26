@@ -53,7 +53,7 @@ typedef struct Buffer{
 
 int readMagicNumber(FILE *fp);
 long int readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *source_height,int Ratio);
-Buffer *ImageRead(const char *filename,int Ratio);
+Buffer *ImageRead(const char *filename,int Ratio,int min,int max);
 void ImageWrite(Buffer *buffer, const char *filename);
 
 #endif /* Image_h */
