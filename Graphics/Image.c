@@ -47,14 +47,14 @@ long int readHeader(FILE *f_source, Buffer *buffer, int *source_width,int *sourc
     
     //int source_width,source_height,
     int source_maxval;
-     skip_comments(f_source);
+    skip_comments(f_source);
     //read the width, height,amd maximum value for a pixel
     fscanf(f_source, "%d %d %d ",source_width,source_height,&source_maxval);
     
     buffer->width = *source_width/Ratio;
     buffer->height = *source_height/Ratio;
     buffer->maxval = source_maxval;
-
+    
     if(buffer->maxval >= 65336 ||buffer->maxval <= 0){
         fprintf(stderr,"image is not ture-color(8byte), read failed\n");
         exit(1);
@@ -69,8 +69,13 @@ Buffer *ImageRead(const char *filename,int Ratio,int min,int max){
     time_t t;
     srand((unsigned)time(&t));
     
-    //
-    int Span = min + rand()%(max+1-min);
+    
+    int span = min + rand()%(max+1-min);
+    int index = span;
+    
+    printf("First span is %d ,\n",span);
+    printf("First index is %d ,\n",span);
+    
     FILE *f_source = fopen(filename,"r");
     if(!f_source){
         fprintf(stderr,"can't open file for reading \n");
@@ -78,9 +83,9 @@ Buffer *ImageRead(const char *filename,int Ratio,int min,int max){
     }
     
     int source_width,source_height;
-
+    
     Buffer *buffer = (Buffer *)malloc(sizeof(Buffer));
-  
+    
     if(!buffer){
         fprintf(stderr,"Can't allocate memory for new image");
         exit(1);
@@ -93,7 +98,7 @@ Buffer *ImageRead(const char *filename,int Ratio,int min,int max){
     
     if(buffer->magic_number==6){
         unsigned char c ;//init
-        int index = rand()%Span;
+       
         fseek(f_source,3*index, SEEK_CUR);
         while (index < size) {     //Dr.plamer tola me should be the origianl size of image
             int x = ((index%source_width)/(Ratio));  //col_index in buffer
@@ -109,21 +114,25 @@ Buffer *ImageRead(const char *filename,int Ratio,int min,int max){
             buffer->box[y*buffer->width+x].b += c;
             
             buffer->box[y*buffer->width+x].count++;
-
-
-            int jump = rand()%Span;
             
-
-            fseek(f_source,3*jump, SEEK_CUR);
-            index += 1 + jump;
+            
+            span = min + rand()%(max+1-min);
+            fseek(f_source,3*span, SEEK_CUR);
+            
+            printf("Now span is %d ,\n",span);
+            index += 1+span;
+            printf("Now index is %d ,\n",index);
+            if (index > size) {
+                printf("Now index is more than size\n");
+            }
         }
-
+        
     }
     else{
         fprintf(stderr,"image format is not correct");
         exit(1);
     }
-   
+    
     int buffer_size = buffer->width*buffer->height;
     int sum =0;
     for (int i=0; i<buffer_size; i++) {
@@ -150,10 +159,10 @@ Buffer *ImageRead(const char *filename,int Ratio,int min,int max){
         printf("the count at %d is %d\n",i,buffer->box[i].count);
         sum +=buffer->box[i].count;
     }
-  
+    double ave_count = sum/buffer_size;
     printf("when ratio is %d ,\n",Ratio);
     printf("the total count is %d\n",sum);
-    printf("the average count is %d\n",sum/buffer_size);
+    printf("the average count is %f\n",ave_count);
     return buffer;
 }
 /**************************************************************************************************************
@@ -166,7 +175,7 @@ void ImageWrite(Buffer *buffer, const char *filename){
         fprintf(stderr,"cannot open file for writing");
     }
     unsigned char ch;
-
+    
     fprintf(f_des, "P%d\n%d %d\n%d\n",6,buffer->width, buffer->height, buffer->maxval);
     for(int i=0; i<size;i++){
         ch=buffer->box[i].r;
@@ -175,18 +184,12 @@ void ImageWrite(Buffer *buffer, const char *filename){
         fwrite(&ch, 1, 1, f_des);
         ch=buffer->box[i].b;
         fwrite(&ch, 1, 1, f_des);
-        }
-
+    }
+    
     fclose(f_des);
     
     
 }
-
-
-
-
-
-
 
 
 
