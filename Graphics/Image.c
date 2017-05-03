@@ -151,7 +151,7 @@ Buffer *ImageRead(const char *filename,int Ratio,int max){
         }
         sum +=buffer->box[i].count;
     }
-    double ave_count = (double)sum/buffer_size;
+    //double ave_count = (double)sum/buffer_size;
     //printf("the average count is %f\n",ave_count);
     return buffer;
 }
@@ -246,7 +246,7 @@ double ave(const char *filename,int Ratio,int max){
         sum +=buffer->box[i].count;
     }
     ave_count = (double)sum/buffer_size;
-    printf("the average count is %f\n",ave_count);
+    //printf("==========the average count is %f==========\n",ave_count);
     return ave_count;
     
 }
